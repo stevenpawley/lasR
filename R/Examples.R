@@ -1,4 +1,4 @@
-las_file = '/Users/steven/GitHub/LASinfections/examples/ex9_1046102267.las'
+las_file = '/Users/steven/Downloads/DIG_2014_0002/100010303416M400_0001.las'
 newlas = las(las_file)
 View(newlas$las_version)
 newlas$well

@@ -92,25 +92,27 @@ versionParser = function(version_dat){
     if (length(version_lines) > 0) {
 
     # a. Split on first dot and take [,1]
-    identifier = str_split(version_lines, '\\.', simplify = TRUE)[,1] %>%
+    mnemonics = str_split(version_lines, '\\.', simplify = TRUE)[, 1] %>%
       str_trim()
 
-    # b. Split on first space after dot
-    after_dot_space = str_split(version_lines, '\\. ', simplify = TRUE)[, 2]
+    # b. Split on first dot: after the dot but before first space = units
+    after_dot_space = str_split(version_lines, '\\.', simplify = TRUE, n=2)[, 2]
+    units = str_split(after_dot_space, '[:space:]', simplify = TRUE)[, 1]
 
     # c. Then separate into two fields based on colon separator
-    value = str_split(after_dot_space, ':', n=2, simplify = TRUE)[, 1] %>%
+    data = str_split(after_dot_space, ':', n=2, simplify = TRUE)[, 1] %>%
       str_trim()
-    val = str_split(after_dot_space, ':', n=2, simplify = TRUE)[, 2] %>%
+    description = str_split(after_dot_space, ':', n=2, simplify = TRUE)[, 2] %>%
       str_trim()
 
     } else {
-      identifier = NULL
-      value = NULL
-      val = NULL
+      mnemonics = NULL
+      units = NULL
+      data = NULL
+      description = NULL
     }
 
-  return(data.frame(identifier, value, val))
+  return(data.frame(mnemonics, units, data, description, stringsAsFactors = F))
 }
 
 
@@ -147,7 +149,7 @@ curveParser = function(curves_dat){
   if (length(curve_lines) > 0) {
 
     # a. Split on first dot: before the dot = the mnemonic
-    mneumonics = str_split(curve_lines, '[.]', n = 2, simplify = TRUE)[, 1] %>%
+    mnemonics = str_split(curve_lines, '[.]', n = 2, simplify = TRUE)[, 1] %>%
       str_trim()
 
     # b. Split on first dot: after the dot but before first space = units
@@ -163,13 +165,13 @@ curveParser = function(curves_dat){
       str_trim()
 
   } else {
-    mneumonics = NULL
+    mnemonics = NULL
     units = NULL
     api = NULL
     description = NULL
   }
 
-  return(data.frame(mneumonics, units, api, description))
+  return(data.frame(mnemonics, units, api, description))
 }
 
 
@@ -231,7 +233,7 @@ logdataParser = function(log_dat, curves, nodata, wrap){
     data_df = as.data.frame(apply(data_df, c(1,2), as.numeric))
 
     # c. Set column names of dataframe based on curve information
-    data_df = setNames(data_df, curves$mneumonics)
+    data_df = setNames(data_df, curves$mnemonics)
     rownames(data_df) = data_df[, 1]
 
     # d. Set nodata values to NA
@@ -287,7 +289,7 @@ wellParser = function(well_dat){
 
     # b. Split after the space on the colon: before colon = value
     colon_divider = str_split(space_divider[, 2], '[:]', n = 2, simplify = TRUE)
-    value = colon_divider[, 1] %>% str_replace('^[.]', '') %>% str_trim()
+    data = colon_divider[, 1] %>% str_replace('^[.]', '') %>% str_trim()
 
     # c. Split after the space on the colon: after colon = description
     description = colon_divider[, 2] %>%
@@ -297,14 +299,14 @@ wellParser = function(well_dat){
     well_info = list()
     for (i in seq_along(mnemonics)) {
       well_info[[paste0(mnemonics[[i]])]] = list(
-        unit=units[[i]], value=value[[i]], description=description[[i]])
+        unit=units[[i]], data=data[[i]], description=description[[i]])
     }
 
     # e. Convert numeric-like values to numerics
     for (i in seq_along(well_info)) {
-      col = well_info[[i]]['value']
+      col = well_info[[i]]['data']
       if (suppressWarnings(all(!is.na(as.numeric(as.character(col)))))) {
-        well_info[[i]]['value'] = as.numeric(as.character(col))
+        well_info[[i]]['data'] = as.numeric(as.character(col))
       }
     }
   } else {
@@ -338,6 +340,7 @@ parametersParser = function(param_dat){
 
   # (1) Split the raw section data into lines
   param_lines = splitSectionData(param_dat)
+  param_lines = str_trim(param_lines)
 
   if (length(param_lines) > 0) {
 
@@ -352,7 +355,7 @@ parametersParser = function(param_dat){
 
     # b. Split after the space on the colon: before colon = value
     colon_divider = str_split(space_divider[, 2], '[:]', n = 2, simplify = TRUE)
-    value = colon_divider[, 1] %>% str_replace('^[.]', '') %>% str_trim()
+    data = colon_divider[, 1] %>% str_replace('^[.]', '') %>% str_trim()
 
     # c. Split after the space on the colon: after colon = description
     description = colon_divider[, 2] %>% str_trim()
@@ -360,9 +363,9 @@ parametersParser = function(param_dat){
   } else {
     mnemonics=NULL
     units=NULL
-    value=NULL
+    data=NULL
     description=NULL
   }
 
-  return(data.frame(mnemonics, units, value, description))
+  return(data.frame(mnemonics, units, data, description))
 }

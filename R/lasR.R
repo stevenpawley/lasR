@@ -27,7 +27,7 @@ las = function(las_file){
   }
 
   # check for wrapping
-  if (las_version[las_version$identifier %in% 'WRAP', 'value'] == "YES") {
+  if (las_version[las_version$mnemonics %in% 'WRAP', 'data'] == "YES") {
     wrap = TRUE
   } else{
     wrap = FALSE
@@ -50,7 +50,7 @@ las = function(las_file){
 
   if (length(sections$log_data) > 0) {
     log_data = logdataParser(
-      log_dat=sections$log_data, curves=curves, nodata=well_info$nodata$value,
+      log_dat=sections$log_data, curves=curves, nodata=well_info$nodata$data,
       wrap=wrap)
   } else {
     log_data = NULL
