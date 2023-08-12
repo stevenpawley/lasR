@@ -9,9 +9,6 @@
 \arguments{
 \item{las}{}
 }
-\value{
-
-}
 \description{
 Plot LAS curve data
 }

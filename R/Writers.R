@@ -7,15 +7,14 @@
 #' @export
 #'
 #' @examples
-writeLAS = function(las, filename) {
-
-  filename = '/Users/steven/GitHub/lasR/testout.las'
+writeLAS <- function(las, filename) {
+  filename <- "/Users/steven/GitHub/lasR/testout.las"
 
   # Version Information
-  write_lines(versionWriter(las$las_version), path = filename, append = FALSE)
+  readr::write_lines(versionWriter(las$las_version), path = filename, append = FALSE)
 
   # Well Information
-  write_lines(wellWriter(las$well), path = filename, append = TRUE)
+  readr::write_lines(wellWriter(las$well), path = filename, append = TRUE)
 }
 
 
@@ -31,46 +30,46 @@ writeLAS = function(las, filename) {
 #' @export
 #'
 #' @examples
-versionWriter = function(las_version) {
-
+versionWriter <- function(las_version) {
   # Header
-  out = paste0('~Version Information')
+  out <- paste0("~Version Information")
 
   # Create mnen.unit data : description block
   for (i in 1:nrow(las_version)) {
-    version_line = paste0(
-      as.character(las_version[i, 1]), '.',
-      as.character(las_version[i, 2]), ' ',
-      as.character(las_version[i, 3]), ' : ',
-      as.character(las_version[i, 4]))
+    version_line <- paste0(
+      as.character(las_version[i, 1]), ".",
+      as.character(las_version[i, 2]), " ",
+      as.character(las_version[i, 3]), " : ",
+      as.character(las_version[i, 4])
+    )
 
-    out = append(out, version_line)
+    out <- append(out, version_line)
   }
 
-  out = append(out, '#')
+  out <- append(out, "#")
 
-  return (out)
+  return(out)
 }
 
 
-wellWriter = function(well) {
-
+wellWriter <- function(well) {
   # Header
-  out = '~Well Information'
-  out = append(out, paste('#MNEM.UNIT', 'DATA', 'DESCRIPTION', sep = '\t'))
+  out <- "~Well Information"
+  out <- append(out, paste("#MNEM.UNIT", "DATA", "DESCRIPTION", sep = "\t"))
 
   # Create mnen.unit data : description block
   for (i in seq_along(well)) {
-    well_line = paste0(
-      as.character(names(well)[i]), '.',
-      as.character(well[[i]]['unit']), ' ',
-      as.character(well[[i]]['data']), ' : ',
-      as.character(well[[i]]['description']))
+    well_line <- paste0(
+      as.character(names(well)[i]), ".",
+      # as.character(well[[i]]["unit"]), " ",
+      as.character(well[[i]]["data"]), " : ",
+      as.character(well[[i]]["description"])
+    )
 
-    out = append(out, well_line)
+    out <- append(out, well_line)
   }
 
-  out = append(out, '#')
+  out <- append(out, "#")
 
   return(out)
 }

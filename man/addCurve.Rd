@@ -9,9 +9,6 @@ addCurve(las, data)
 \arguments{
 \item{data}{}
 }
-\value{
-
-}
 \description{
 Add new log curve and curve information
 }

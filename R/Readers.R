@@ -10,20 +10,22 @@
 #' @export
 #'
 #' @examples
-sectionParser <- function(las_dat){
+sectionParser <- function(las_dat) {
   # split sections based on ~ separator
-  sections <- stringr::str_split(las_dat, pattern = '~', simplify = TRUE)
+  sections <- stringr::str_split(las_dat, pattern = "~", simplify = TRUE)
 
   # check for the presence of optional sections
-  parameters <- sections[grepl(pattern = '^P', x = sections)]
+  parameters <- sections[grepl(pattern = "^P", x = sections)]
 
-  if (length(parameters) == 0)
+  if (length(parameters) == 0) {
     parameters <- NULL
+  }
 
-  other <- sections[grepl(pattern = '^O', x = sections)]
+  other <- sections[grepl(pattern = "^O", x = sections)]
 
-  if (length(other) == 0)
+  if (length(other) == 0) {
     other <- NULL
+  }
 
   # return sections as a named list
   # Well Information (Required)
@@ -32,12 +34,12 @@ sectionParser <- function(las_dat){
   # Other (Optional)
   # ASCII Log Data (Required)
   list(
-    las_version = sections[grepl(pattern = '^V', x = sections)],
-    well = sections[grepl(pattern = '^W', x = sections)],
-    curves = sections[grepl(pattern = '^C', x = sections)],
+    las_version = sections[grepl(pattern = "^V", x = sections)],
+    well = sections[grepl(pattern = "^W", x = sections)],
+    curves = sections[grepl(pattern = "^C", x = sections)],
     parameters = parameters,
     other = other,
-    log_data = sections[grepl(pattern = '^A', x = sections)]
+    log_data = sections[grepl(pattern = "^A", x = sections)]
   )
 }
 
@@ -58,11 +60,11 @@ splitSectionData <- function(dat) {
   # split lines
   # remove header line
   # remove empty lines
-  chr_lines <- stringr::str_replace_all(dat, '\r\n', '\n')
-  chr_lines <- stringr::str_split(chr_lines, '\n', simplify = TRUE)
+  chr_lines <- stringr::str_replace_all(dat, "\r\n", "\n")
+  chr_lines <- stringr::str_split(chr_lines, "\n", simplify = TRUE)
   chr_lines <- chr_lines[2:length(chr_lines)]
-  chr_lines <- chr_lines[grepl('^#', chr_lines) == FALSE]
-  chr_lines <- chr_lines[chr_lines != '']
+  chr_lines <- chr_lines[grepl("^#", chr_lines) == FALSE]
+  chr_lines <- chr_lines[chr_lines != ""]
 
   chr_lines
 }
@@ -77,50 +79,49 @@ splitSectionData <- function(dat) {
 #' @export
 #'
 #' @examples
-versionParser <- function(version_dat){
+versionParser <- function(version_dat) {
   # Parsing procedure
   # 1. Split character vector into lines
   #   a. Split character vector into lines using newline separator
   #   b. Remove the first line (the header)
   #   c. Remove any empty lines
   #
-  #. 2. Parse into a dataframe
+  # . 2. Parse into a dataframe
   #   a. Each line is split on first dot (identifier),
   #   b. Before last colon (value)
   #   c. After lasdt colon (description)
 
   # (1) Split the raw section data into lines
-  version_lines = splitSectionData(dat = version_dat)
+  version_lines <- splitSectionData(dat = version_dat)
 
   # (2) Parse into dataframe
-    if (length(version_lines) > 0) {
+  if (length(version_lines) > 0) {
     # a. Split on first dot and take [,1]
     mnemonics <-
-      stringr::str_split(version_lines, '\\.', simplify = TRUE)[, 1] %>%
+      stringr::str_split(version_lines, "\\.", simplify = TRUE)[, 1] %>%
       stringr::str_trim()
 
     # b. Split on first dot: after the dot but before first space = units
     after_dot_space <-
-      stringr::str_split(version_lines, '\\.', simplify = TRUE, n = 2)[, 2]
+      stringr::str_split(version_lines, "\\.", simplify = TRUE, n = 2)[, 2]
 
     units <-
-      stringr::str_split(after_dot_space, '[:space:]', simplify = TRUE)[, 1]
+      stringr::str_split(after_dot_space, "[:space:]", simplify = TRUE)[, 1]
 
     # c. Then separate into two fields based on colon separator
-    data  <-
-      stringr::str_split(after_dot_space, ':', n = 2, simplify = TRUE)[, 1] %>%
+    data <-
+      stringr::str_split(after_dot_space, ":", n = 2, simplify = TRUE)[, 1] %>%
       stringr::str_trim()
 
-    description  <-
-      stringr::str_split(after_dot_space, ':', n = 2, simplify = TRUE)[, 2] %>%
+    description <-
+      stringr::str_split(after_dot_space, ":", n = 2, simplify = TRUE)[, 2] %>%
       stringr::str_trim()
-
-    } else {
-      mnemonics = NULL
-      units = NULL
-      data = NULL
-      description = NULL
-    }
+  } else {
+    mnemonics <- NULL
+    units <- NULL
+    data <- NULL
+    description <- NULL
+  }
 
   tibble(mnemonics, units, data, description)
 }
@@ -134,14 +135,14 @@ versionParser <- function(version_dat){
 #' @export
 #'
 #' @examples
-curveParser = function(curves_dat){
+curveParser <- function(curves_dat) {
   # Parsing procedure
   # 1. Split character vector into lines
   #   a. Split character vector into lines using newline separator
   #   b. Remove the first line (the header)
   #   c. Remove any empty lines
   #
-  #. 2. Parse curve information into a dataframe. For each line:
+  # . 2. Parse curve information into a dataframe. For each line:
   #   a. Split on first dot: before the dot = the mnenmonic
   #   b. Split on first dot: after dot but before space = units
   #   c. Extract API values based on pattern matching
@@ -151,20 +152,20 @@ curveParser = function(curves_dat){
   curve_lines <- splitSectionData(curves_dat)
 
   # remove any spaces before the first dot
-  curve_lines <- stringr::str_replace(curve_lines, '[..]', '.')
-  curve_lines <- stringr::str_remove(curve_lines, '^[:space:]+')
-  curve_lines <- stringr::str_replace(curve_lines, '[:space:]+[.]', '.')
+  curve_lines <- stringr::str_replace(curve_lines, "[..]", ".")
+  curve_lines <- stringr::str_remove(curve_lines, "^[:space:]+")
+  curve_lines <- stringr::str_replace(curve_lines, "[:space:]+[.]", ".")
 
   # (2) Parse curve information into a dataframe
   if (length(curve_lines) > 0) {
     # a. Split on first dot: before the dot = the mnemonic
     mnemonics <-
-      stringr::str_split(curve_lines, '[.]', n = 2, simplify = TRUE)[, 1] %>%
+      stringr::str_split(curve_lines, "[.]", n = 2, simplify = TRUE)[, 1] %>%
       stringr::str_trim()
 
     # b. Split on first dot: after the dot but before first space = units
-    units <- stringr::str_split(curve_lines, '[.]', n = 2, simplify = TRUE)[, 2]
-    units <- stringr::str_split(units, '[:space:]', simplify = TRUE)[, 1]
+    units <- stringr::str_split(curve_lines, "[.]", n = 2, simplify = TRUE)[, 2]
+    units <- stringr::str_split(units, "[:space:]", simplify = TRUE)[, 1]
 
     # c. Extract api based on 00 000 00 00 digits pattern
     api <- stringr::str_extract(
@@ -174,14 +175,13 @@ curveParser = function(curves_dat){
 
     # d. Split on colon: after the colon = the description
     description <-
-      stringr::str_split(curve_lines, '[:]', n = 2, simplify = TRUE)[, 2] %>%
+      stringr::str_split(curve_lines, "[:]", n = 2, simplify = TRUE)[, 2] %>%
       stringr::str_trim()
-
   } else {
-    mnemonics = NULL
-    units = NULL
-    api = NULL
-    description = NULL
+    mnemonics <- NULL
+    units <- NULL
+    api <- NULL
+    description <- NULL
   }
 
   tibble(mnemonics, units, api, description)
@@ -198,14 +198,14 @@ curveParser = function(curves_dat){
 #' @export
 #'
 #' @examples
-logdataParser = function(log_dat, curves, nodata, wrap){
+logdataParser <- function(log_dat, curves, nodata, wrap) {
   # Parsing procedure
   # 1. Split character vector into lines
   #   a. Split character vector into lines using newline separator
   #   b. Remove the first line (the header)
   #   c. Remove any empty lines
   #
-  #. 2. Parse curve information into a dataframe. For each line:
+  # . 2. Parse curve information into a dataframe. For each line:
   #   a. Split columns based on any number of spaces and create dataframe
   #   b. Convert dataframe into numeric values
   #   c. Extract API values based on pattern matching
@@ -219,39 +219,37 @@ logdataParser = function(log_dat, curves, nodata, wrap){
   if (length(log_lines) > 0) {
     # a. Split columns based on spaces
     if (wrap == TRUE) {
-
       # Reshape log data into column-wise vector
       log_df <- log_lines %>%
-        stringr::str_split('[:space:]+', simplify = TRUE) %>%
+        stringr::str_split("[:space:]+", simplify = TRUE) %>%
         tibble()
 
       log_df <- as.vector(t(log_df))
       log_df <- log_df[log_df != ""]
 
       # Dataframe to store reshaped log data
-      data_df <-  as.data.frame(
+      data_df <- as.data.frame(
         matrix(ncol = length(log_df) / nrow(curves), nrow = nrow(curves))
       )
 
       # Reshape log data into new dataframe
       data_df[] <- log_df
       data_df <- t(data_df)
-
     } else {
       data_df <- tibble(
-        stringr::str_split(log_lines, '[:space:]+', simplify = TRUE))
+        stringr::str_split(log_lines, "[:space:]+", simplify = TRUE)
+      )
     }
 
     # b. Convert dataframe to numeric values
-    data_df <- as.data.frame(apply(data_df, c(1,2), as.numeric))
+    data_df <- as.data.frame(apply(data_df, c(1, 2), as.numeric))
 
     # c. Set column names of dataframe based on curve information
     data_df <- setNames(data_df, curves$mnemonics)
-    rownames(data_df) = data_df[, 1]
+    rownames(data_df) <- data_df[, 1]
 
     # d. Set nodata values to NA
-    data_df[data_df == nodata] = NA
-
+    data_df[data_df == nodata] <- NA
   } else {
     data_df <- NULL
   }
@@ -268,7 +266,7 @@ logdataParser = function(log_dat, curves, nodata, wrap){
 #' @export
 #'
 #' @examples
-wellParser = function(well_dat){
+wellParser <- function(well_dat) {
   # Parsing procedure
   # 1. Split character vector into lines
   #   a. Split character vector into lines using newline separator
@@ -282,36 +280,36 @@ wellParser = function(well_dat){
   #   d. Create a named list
 
   # (1) Split the raw section data into lines
-  well_lines = splitSectionData(well_dat)
+  well_lines <- splitSectionData(well_dat)
 
   # remove any spaces before the first dot
-  well_lines = str_replace(well_lines, '[..]', '.')
-  well_lines = str_remove(well_lines, '^[:space:]+')
-  well_lines = str_replace(well_lines, '[:space:]+[.]', '.')
+  well_lines <- stringr::str_replace(well_lines, "[..]", ".")
+  well_lines <- stringr::str_remove(well_lines, "^[:space:]+")
+  well_lines <- stringr::str_replace(well_lines, "[:space:]+[.]", ".")
 
   # (2) Parse well information into a list
   if (length(well_lines) > 0) {
     # a. Split on first space: before space = mnemonic and unit
     space_divider <-
-      stringr::str_split(well_lines, '[:space:]', n = 2, simplify = TRUE)
+      stringr::str_split(well_lines, "[:space:]", n = 2, simplify = TRUE)
 
     mnemonics_and_unit <- space_divider[, 1] %>% str_trim()
 
     mnemonics <-
-      stringr::str_split(mnemonics_and_unit, '[.]', simplify = T)[, 1] %>%
+      stringr::str_split(mnemonics_and_unit, "[.]", simplify = T)[, 1] %>%
       stringr::str_trim()
 
-    mnemonics[mnemonics == 'NULL'] <- 'nodata'
+    mnemonics[mnemonics == "NULL"] <- "nodata"
     units <-
-      stringr::str_split(mnemonics_and_unit, '[.]', simplify = T)[, 2] %>%
+      stringr::str_split(mnemonics_and_unit, "[.]", simplify = T)[, 2] %>%
       stringr::str_trim()
 
     # b. Split after the space on the colon: before colon = value
     colon_divider <-
-      stringr::str_split(space_divider[, 2], '[:]', n = 2, simplify = TRUE)
+      stringr::str_split(space_divider[, 2], "[:]", n = 2, simplify = TRUE)
 
     data <- colon_divider[, 1] %>%
-      stringr::str_replace('^[.]', '') %>%
+      stringr::str_replace("^[.]", "") %>%
       stringr::str_trim()
 
     # c. Split after the space on the colon: after colon = description
@@ -321,25 +319,24 @@ wellParser = function(well_dat){
     # d. Create named list
     well_info <- list()
 
-    for (i in seq_along(mnemonics))
-      well_info[[paste0(mnemonics[[i]])]] = list(
+    for (i in seq_along(mnemonics)) {
+      well_info[[paste0(mnemonics[[i]])]] <- list(
         unit = units[[i]],
         data = data[[i]],
         description = description[[i]]
       )
+    }
 
     # e. Convert numeric-like values to numerics
     for (i in seq_along(well_info)) {
-      col <- well_info[[i]]['data']
+      col <- well_info[[i]]["data"]
 
       if (suppressWarnings(all(!is.na(as.numeric(as.character(col)))))) {
-        well_info[[i]]['data'] = as.numeric(as.character(col))
+        well_info[[i]]["data"] <- as.numeric(as.character(col))
       }
-
     }
-
   } else {
-    well_info = NULL
+    well_info <- NULL
   }
 
   well_info
@@ -354,7 +351,7 @@ wellParser = function(well_dat){
 #' @export
 #'
 #' @examples
-parametersParser <- function(param_dat){
+parametersParser <- function(param_dat) {
   # Parsing procedure
   # 1. Split character vector into lines
   #   a. Split character vector into lines using newline separator
@@ -375,32 +372,31 @@ parametersParser <- function(param_dat){
     # (2) Parse well information into a dataframe
     # a. Split on first space: before space = mnemonic and unit
     space_divider <-
-      stringr::str_split(param_lines, '[:space:]', n = 2, simplify = TRUE)
+      stringr::str_split(param_lines, "[:space:]", n = 2, simplify = TRUE)
 
     mnemonics_and_unit <- space_divider[, 1] %>%
       stringr::str_trim()
 
     mnemonics <-
-      stringr::str_split(mnemonics_and_unit, '[.]', simplify = T)[, 1] %>%
+      stringr::str_split(mnemonics_and_unit, "[.]", simplify = T)[, 1] %>%
       stringr::str_trim()
 
     units <-
-      stringr::str_split(mnemonics_and_unit, '[.]', simplify = T)[, 2] %>%
+      stringr::str_split(mnemonics_and_unit, "[.]", simplify = T)[, 2] %>%
       stringr::str_trim()
 
     # b. Split after the space on the colon: before colon = value
     colon_divider <-
-      stringr::str_split(space_divider[, 2], '[:]', n = 2, simplify = TRUE)
+      stringr::str_split(space_divider[, 2], "[:]", n = 2, simplify = TRUE)
 
     data <- colon_divider[, 1] %>%
-      stringr::str_replace('^[.]', '') %>%
+      stringr::str_replace("^[.]", "") %>%
       stringr::str_trim()
 
     # c. Split after the space on the colon: after colon = description
     description <-
       colon_divider[, 2] %>%
       stringr::str_trim()
-
   } else {
     mnemonics <- NULL
     units <- NULL

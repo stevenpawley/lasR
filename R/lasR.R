@@ -1,9 +1,3 @@
-library(stringr)
-library(readr)
-library(ggplot2)
-library(reshape2)
-library(dplyr)
-
 #' S3 Class for LAS data
 #'
 #' @param las_file
@@ -12,8 +6,7 @@ library(dplyr)
 #' @export
 #'
 #' @examples
-las <-  function(las_file){
-
+las <- function(las_file) {
   # read las
   las_dat <- readr::read_file(las_file)
 
@@ -23,13 +16,13 @@ las <-  function(las_file){
   if (length(sections$las_version) > 0) {
     las_version <- versionParser(version_dat = sections$las_version)
   } else {
-    stop(paste('Version Information Section not recognized in file', las_file))
+    stop(paste("Version Information Section not recognized in file", las_file))
   }
 
   # check for wrapping
-  if (las_version[las_version$mnemonics %in% 'WRAP', 'data'] == "YES") {
+  if (las_version[las_version$mnemonics %in% "WRAP", "data"] == "YES") {
     wrap <- TRUE
-  } else{
+  } else {
     wrap <- FALSE
   }
 
@@ -38,14 +31,14 @@ las <-  function(las_file){
     well_info <- wellParser(well_dat = sections$well)
   } else {
     well_info <- NULL
-    warning(paste('Well Information Section not recognised in file', las_file))
+    warning(paste("Well Information Section not recognised in file", las_file))
   }
 
   if (length(sections$curves) > 0) {
     curves <- curveParser(curves_dat = sections$curves)
   } else {
     curves <- NULL
-    warning(paste('Curve Information Section not recognized in file', las_file))
+    warning(paste("Curve Information Section not recognized in file", las_file))
   }
 
   if (length(sections$log_data) > 0) {
@@ -57,14 +50,14 @@ las <-  function(las_file){
     )
   } else {
     log_data <- NULL
-    warning(paste('ASCII Log Data Section not recognised in file', las_file))
+    warning(paste("ASCII Log Data Section not recognised in file", las_file))
   }
 
   if (length(sections$parameters) > 0) {
     parameters <- parametersParser(param_dat = sections$parameters)
   } else {
     parameters <- NULL
-    warning(paste('Parameter Information Section not recognised in file', las_file))
+    warning(paste("Parameter Information Section not recognised in file", las_file))
   }
 
   # return as LAS S3 object
@@ -78,7 +71,7 @@ las <-  function(las_file){
       log_data = log_data,
       wrapped = wrap
     ),
-    class = 'LAS'
+    class = "LAS"
   )
 }
 
@@ -92,7 +85,7 @@ las <-  function(las_file){
 #' @export
 #'
 #' @examples
-addCurve = function(las, data){
+addCurve <- function(las, data) {
 }
 
 
@@ -105,36 +98,40 @@ addCurve = function(las, data){
 #' @export
 #'
 #' @examples
-plot.LAS = function(las, depth.col, curves, depth_lim) {
-
+plot.LAS <- function(las, depth.col, curves, depth_lim) {
   # some checks
-  if (is.null(las$log_data))
-    stop('No log data is present')
+  if (is.null(las$log_data)) {
+    stop("No log data is present")
+  }
 
   # subset curves and depth intervals
   if (!missing(curves)) {
-    log_data = select_(las$log_data, depth.col, curves)
+    log_data <- dplyr::select_(las$log_data, depth.col, curves)
   } else {
-    log_data = las$log_data
+    log_data <- las$log_data
   }
 
-  if (missing(depth.col))
-    depth.col = names(log_data)[1]
+  if (missing(depth.col)) {
+    depth.col <- names(log_data)[1]
+  }
 
   if (!missing(depth_lim)) {
-    log_data = log_data[
+    log_data <- log_data[
       log_data[[depth.col]] > min(depth_lim) &
-      log_data[[depth.col]] < max(depth_lim), ]
+        log_data[[depth.col]] < max(depth_lim),
+    ]
   }
 
   # plotting
-  log_data %>% melt(id.vars = depth.col) %>%
-    ggplot(aes_string(x=depth.col, y='value')) +
-    geom_line() + coord_flip() + scale_x_reverse() +
-    facet_grid(.~ variable, scales = "free_x")
-
+  log_data %>%
+    reshape2::melt(id.vars = depth.col) %>%
+    ggplot2::ggplot(ggplot2::aes_string(x = depth.col, y = "value")) +
+    ggplot2::geom_line() +
+    ggplot2::coord_flip() +
+    ggplot2::scale_x_reverse() +
+    ggplot2::facet_grid(. ~ variable, scales = "free_x")
 }
 
 
-write.LAS = function(las){
+write.LAS <- function(las) {
 }

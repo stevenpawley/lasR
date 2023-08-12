@@ -9,9 +9,6 @@ las(las_file)
 \arguments{
 \item{las_file}{}
 }
-\value{
-
-}
 \description{
 S3 Class for LAS data
 }
