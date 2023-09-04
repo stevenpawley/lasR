@@ -2,3 +2,6 @@
 .Rhistory
 .RData
 .Ruserdata
+lasR.Rcheck/
+lasR*.tar.gz
+lasR*.tgz

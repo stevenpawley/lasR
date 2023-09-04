@@ -293,7 +293,7 @@ wellParser <- function(well_dat) {
     space_divider <-
       stringr::str_split(well_lines, "[:space:]", n = 2, simplify = TRUE)
 
-    mnemonics_and_unit <- space_divider[, 1] %>% str_trim()
+    mnemonics_and_unit <- space_divider[, 1] %>% stringr::str_trim()
 
     mnemonics <-
       stringr::str_split(mnemonics_and_unit, "[.]", simplify = T)[, 1] %>%
