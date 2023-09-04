@@ -254,7 +254,7 @@ logdataParser <- function(log_dat, curves, nodata, wrap) {
     data_df <- NULL
   }
 
-  as_tibble(data_df)
+  dplyr::as_tibble(data_df)
 }
 
 
